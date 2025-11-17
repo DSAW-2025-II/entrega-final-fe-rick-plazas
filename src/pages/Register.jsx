@@ -8,7 +8,7 @@ const Register = () => {
     nombre: "",
     apellido: "",
     correo: "",
-    contraseña: "",
+    contrasena: "",
     telefono: "",
   });
 
@@ -37,14 +37,14 @@ const Register = () => {
           Registro de Usuario
         </h2>
 
-        {["nombre", "apellido", "correo", "contraseña", "telefono"].map(
+        {["nombre", "apellido", "correo", "contrasena", "telefono"].map(
           (field) => (
             <div className="mb-4" key={field}>
               <label className="block text-gray-700 capitalize mb-1">
                 {field}
               </label>
               <input
-                type={field === "contraseña" ? "password" : "text"}
+                type={field === "contrasena" ? "password" : "text"}
                 name={field}
                 value={form[field]}
                 onChange={handleChange}
