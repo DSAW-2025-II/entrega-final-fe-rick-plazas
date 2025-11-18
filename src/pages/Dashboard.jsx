@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import API from "../api/api";
 import { useNavigate } from "react-router-dom";
-import { jwt_decode } from "jwt-decode"; // cambio otra ezv
+import * as jwt_decode from "jwt-decode"; // ✅ cambio clave
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -38,13 +38,16 @@ const Dashboard = () => {
   const getIdConductor = () => {
     if (!token) return null;
     try {
-      const decoded = jwt_decode(token); // ✅ funciona con la importación nominada
+      const decoded = jwt_decode.default(token); // ✅ usar .default
       return decoded.id;
     } catch (err) {
       console.error("Error decodificando token", err);
       return null;
     }
   };
+
+  // resto del código sigue igual...
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
