@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import API from "../api/api";
 import { useNavigate } from "react-router-dom";
-import * as jwt_decode from "jwt-decode"; // 🔹 CORRECCIÓN para Vercel
+import jwt_decode from "jwt-decode";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -18,7 +18,7 @@ const Dashboard = () => {
 
   const token = localStorage.getItem("token");
 
-  // Si no hay token, redirige al login
+  // Redirige al login si no hay token
   useEffect(() => {
     if (!token) {
       navigate("/login");
@@ -37,12 +37,13 @@ const Dashboard = () => {
     }
   };
 
-  // Obtener idConductor desde el token
+  // 🔹 Obtener idConductor desde el token
   const getIdConductor = () => {
     if (!token) return null;
     try {
-      const decoded = jwt_decode(token); // Funciona con import * as
-      return decoded.id; // asegurarse que el backend incluya el campo 'id' en el token
+      // Compatibilidad dev/prod con jwt-decode
+      const decoded = jwt_decode.default ? jwt_decode.default(token) : jwt_decode(token);
+      return decoded.id;
     } catch (err) {
       console.error("Error decodificando token", err);
       return null;
