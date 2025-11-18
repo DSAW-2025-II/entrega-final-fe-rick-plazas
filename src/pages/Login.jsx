@@ -13,7 +13,7 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await API.post("/auth/login", form);
+      const res = await API.post("api/auth/login", form);
       const token = res.data;
       if (token.startsWith("ey")) {
         localStorage.setItem("token", token);
