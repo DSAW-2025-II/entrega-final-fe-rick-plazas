@@ -56,7 +56,8 @@ const getIdConductor = () => {
     const idConductor = getIdConductor(); // ✅ ahora dinámico
     if (!idConductor) throw new Error("No se pudo obtener el ID del usuario");
 
-    await API.post(`/viajes/${idConductor}`, nuevoViaje);
+    await API.post(`/api/viajes/${idConductor}`, nuevoViaje);
+
     alert("Viaje creado con éxito");
     cargarViajes();
     setNuevoViaje({
