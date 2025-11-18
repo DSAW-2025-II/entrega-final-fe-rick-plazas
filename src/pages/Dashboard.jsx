@@ -1,59 +1,164 @@
 import React, { useEffect, useState } from "react";
-import { jwtDecode } from "jwt-decode";
+import API from "../api/api";
+import { useNavigate } from "react-router-dom";
 
-export default function Dashboard() {
-    const [user, setUser] = useState(null);
-    const [viajes, setViajes] = useState([]);
+const Dashboard = () => {
+  const navigate = useNavigate();
+  const [viajes, setViajes] = useState([]);
+  const [nuevoViaje, setNuevoViaje] = useState({
+    puntoInicio: "",
+    puntoFinal: "",
+    ruta: "",
+    horaSalida: "",
+    cuposDisponibles: "",
+    tarifa: "",
+    estado: "DISPONIBLE",
+  });
 
-    useEffect(() => {
-        const token = localStorage.getItem("token");
+  const token = localStorage.getItem("token");
 
-        if (!token) {
-            console.log("No token found");
-            return;
-        }
+  // Si no hay token, redirige al login
+  useEffect(() => {
+    if (!token) {
+      navigate("/login");
+    } else {
+      cargarViajes();
+    }
+  }, []);
 
-        try {
-            const decoded = jwtDecode(token);
-            console.log("Decoded token:", decoded);
-            setUser(decoded);
+  // 🔹 Cargar lista de viajes
+  const cargarViajes = async () => {
+    try {
+      const res = await API.get("/viajes");
+      setViajes(res.data);
+    } catch (err) {
+      console.error("Error cargando viajes", err);
+    }
+  };
 
-            fetchUserViajes(decoded.id);
-        } catch (err) {
-            console.error("Error decoding token", err);
-        }
-    }, []);
+  // 🔹 Crear nuevo viaje
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      // Este ID debe corresponder al usuario autenticado 
+      const idConductor = 6; //  temporal
+      await API.post(`/viajes/${idConductor}`, nuevoViaje);
+      alert("Viaje creado con éxito");
+      cargarViajes();
+      setNuevoViaje({
+        puntoInicio: "",
+        puntoFinal: "",
+        ruta: "",
+        horaSalida: "",
+        cuposDisponibles: "",
+        tarifa: "",
+        estado: "DISPONIBLE",
+      });
+    } catch (err) {
+      alert("Error creando el viaje");
+    }
+  };
 
-    const fetchUserViajes = async (userId) => {
-        try {
-            const response = await fetch(`https://wheels-back-production.up.railway.app/api/viajes/usuario/${userId}`);
-            const data = await response.json();
-            setViajes(data);
-        } catch (error) {
-            console.error("Error fetching viajes:", error);
-        }
-    };
+  const handleChange = (e) => {
+    setNuevoViaje({ ...nuevoViaje, [e.target.name]: e.target.value });
+  };
 
-    return (
-        <div style={{ padding: 20 }}>
-            <h2>Dashboard</h2>
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/login");
+  };
 
-            {user ? (
-                <div>
-                    <p><strong>ID:</strong> {user.id}</p>
-                    <p><strong>Email:</strong> {user.email}</p>
-                    <p><strong>Role:</strong> {user.role}</p>
-                </div>
-            ) : (
-                <p>Cargando usuario...</p>
-            )}
+  return (
+    <div className="min-h-screen bg-gray-100">
+      {/* Header */}
+      <header className="bg-blue-600 text-white py-4 px-6 flex justify-between items-center">
+        <h1 className="text-2xl font-bold">Wheels 🚗</h1>
+        <button
+          onClick={handleLogout}
+          className="bg-red-500 px-3 py-1 rounded-lg hover:bg-red-600"
+        >
+          Cerrar sesión
+        </button>
+      </header>
 
-            <h3>Mis viajes</h3>
-            <ul>
-                {viajes.map(v => (
-                    <li key={v.id}>{v.destino} — {v.fecha}</li>
-                ))}
+      <div className="p-6 grid md:grid-cols-2 gap-6">
+        {/* Lista de viajes */}
+        <div>
+          <h2 className="text-xl font-semibold mb-4">Viajes disponibles</h2>
+          {viajes.length === 0 ? (
+            <p>No hay viajes aún</p>
+          ) : (
+            <ul className="space-y-3">
+              {viajes.map((v) => (
+                <li
+                  key={v.id}
+                  className="bg-white p-4 rounded-xl shadow flex flex-col"
+                >
+                  <span className="font-semibold text-blue-700">
+                    {v.puntoInicio} → {v.puntoFinal}
+                  </span>
+                  <span className="text-gray-700">{v.ruta}</span>
+                  <span className="text-gray-600">
+                    🕓 {new Date(v.horaSalida).toLocaleString()}
+                  </span>
+                  <span className="text-gray-700">
+                    💺 Cupos: {v.cuposDisponibles}
+                  </span>
+                  <span className="text-green-700 font-bold">
+                    💰 ${v.tarifa}
+                  </span>
+                </li>
+              ))}
             </ul>
+          )}
         </div>
-    );
-}
+
+        {/* Formulario para crear viaje */}
+        <div>
+          <h2 className="text-xl font-semibold mb-4">Crear nuevo viaje</h2>
+          <form
+            onSubmit={handleSubmit}
+            className="bg-white p-6 rounded-xl shadow space-y-3"
+          >
+            {[
+              "puntoInicio",
+              "puntoFinal",
+              "ruta",
+              "horaSalida",
+              "cuposDisponibles",
+              "tarifa",
+            ].map((field) => (
+              <div key={field}>
+                <label className="block text-gray-700 mb-1 capitalize">
+                  {field}
+                </label>
+                <input
+                  type={
+                    field === "horaSalida"
+                      ? "datetime-local"
+                      : field === "tarifa" || field === "cuposDisponibles"
+                      ? "number"
+                      : "text"
+                  }
+                  name={field}
+                  value={nuevoViaje[field]}
+                  onChange={handleChange}
+                  className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  required
+                />
+              </div>
+            ))}
+            <button
+              type="submit"
+              className="bg-blue-600 text-white w-full py-2 rounded-lg hover:bg-blue-700"
+            >
+              Crear viaje
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Dashboard;
