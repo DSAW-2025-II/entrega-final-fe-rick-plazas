@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import API from "../api/api";
 import { useNavigate } from "react-router-dom";
-import jwt_decode from "jwt-decode";
+import { jwt_decode } from "jwt-decode"; // cambio otra ezv
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -18,7 +18,6 @@ const Dashboard = () => {
 
   const token = localStorage.getItem("token");
 
-  // Redirige al login si no hay token
   useEffect(() => {
     if (!token) {
       navigate("/login");
@@ -27,7 +26,6 @@ const Dashboard = () => {
     }
   }, []);
 
-  // 🔹 Cargar lista de viajes
   const cargarViajes = async () => {
     try {
       const res = await API.get("/viajes");
@@ -37,12 +35,10 @@ const Dashboard = () => {
     }
   };
 
-  // 🔹 Obtener idConductor desde el token
   const getIdConductor = () => {
     if (!token) return null;
     try {
-      // Compatibilidad dev/prod con jwt-decode
-      const decoded = jwt_decode.default ? jwt_decode.default(token) : jwt_decode(token);
+      const decoded = jwt_decode(token); // ✅ funciona con la importación nominada
       return decoded.id;
     } catch (err) {
       console.error("Error decodificando token", err);
@@ -50,7 +46,6 @@ const Dashboard = () => {
     }
   };
 
-  // 🔹 Crear nuevo viaje
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -86,7 +81,6 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* Header */}
       <header className="bg-blue-600 text-white py-4 px-6 flex justify-between items-center">
         <h1 className="text-2xl font-bold">Wheels 🚗</h1>
         <button
@@ -98,7 +92,6 @@ const Dashboard = () => {
       </header>
 
       <div className="p-6 grid md:grid-cols-2 gap-6">
-        {/* Lista de viajes */}
         <div>
           <h2 className="text-xl font-semibold mb-4">Viajes disponibles</h2>
           {viajes.length === 0 ? (
@@ -117,19 +110,14 @@ const Dashboard = () => {
                   <span className="text-gray-600">
                     🕓 {new Date(v.horaSalida).toLocaleString()}
                   </span>
-                  <span className="text-gray-700">
-                    💺 Cupos: {v.cuposDisponibles}
-                  </span>
-                  <span className="text-green-700 font-bold">
-                    💰 ${v.tarifa}
-                  </span>
+                  <span className="text-gray-700">💺 Cupos: {v.cuposDisponibles}</span>
+                  <span className="text-green-700 font-bold">💰 ${v.tarifa}</span>
                 </li>
               ))}
             </ul>
           )}
         </div>
 
-        {/* Formulario para crear viaje */}
         <div>
           <h2 className="text-xl font-semibold mb-4">Crear nuevo viaje</h2>
           <form
@@ -145,9 +133,7 @@ const Dashboard = () => {
               "tarifa",
             ].map((field) => (
               <div key={field}>
-                <label className="block text-gray-700 mb-1 capitalize">
-                  {field}
-                </label>
+                <label className="block text-gray-700 mb-1 capitalize">{field}</label>
                 <input
                   type={
                     field === "horaSalida"
